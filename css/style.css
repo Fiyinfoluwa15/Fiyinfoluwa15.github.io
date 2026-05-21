@@ -894,8 +894,26 @@ ul { list-style: none; }
     gap: 1.5rem;
   }
 
-  .about-card { grid-template-columns: 1fr; }
-  .about-stat:last-child { grid-column: span 1; text-align: left; }
+ .about-visual {
+    align-items: center; /* 👈 This stops it from sticking to the right side! */
+    width: 100%;
+  }
+
+  /* 2. Format the card layout when stacked */
+  .about-visual .about-card { 
+    grid-template-columns: 1fr; /* Stacks the stats vertically */
+    gap: 2.5rem;               /* Generous breathing room between stats */
+    text-align: center;         /* Centers the text inside each row */
+    padding: 2.5rem 1.5rem;    /* Expands the internal breathing room */
+    width: 100%;                /* Allows the container to match standard margins */
+  }
+
+  /* 3. Forces individual stat chunks to group strictly down the center line */
+  .about-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;       /* Centers the '2+' and the label cleanly on top of each other */
+  }
 
 }
 
