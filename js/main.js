@@ -84,7 +84,7 @@ window.addEventListener('load', () => {
   It appears on the site within minutes. No code needed!
 */
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9kzmYM1xrrZeyEbm_bZQBWOUqkZXobl1nexHtjHTXycBtzUiA3jBKic8YMhrtcoztIk0oEW5u3F-X/pub?gid=1493498578&single=true&output=csv';
+const SHEET_URL = 'PASTE_YOUR_CSV_URL_HERE';
 
 async function fetchProjects() {
   const loading = document.getElementById('projectsLoading');
@@ -92,11 +92,11 @@ async function fetchProjects() {
   const grid    = document.getElementById('projectsGrid');
 
   // Sheet not connected yet — show fallback projects
-  // if (SHEET_URL === 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9kzmYM1xrrZeyEbm_bZQBWOUqkZXobl1nexHtjHTXycBtzUiA3jBKic8YMhrtcoztIk0oEW5u3F-X/pub?gid=1493498578&single=true&output=csv') {
-  //   loading.classList.add('hidden');
-  //   renderFallbackProjects(grid);
-  //   return;
-  // }
+  if (SHEET_URL === 'PASTE_YOUR_CSV_URL_HERE') {
+    loading.classList.add('hidden');
+    renderFallbackProjects(grid);
+    return;
+  }
 
   try {
     const response = await fetch(SHEET_URL);
@@ -152,42 +152,78 @@ async function fetchProjects() {
   }
 }
 
+function sanitiseImageUrl(url) {
+  if (!url) return '';
+
+  // Convert GitHub blob URL to raw
+  // e.g. github.com/user/repo/blob/main/image.png → raw.githubusercontent.com/...
+  if (url.includes('github.com') && url.includes('/blob/')) {
+    return url
+      .replace('github.com', 'raw.githubusercontent.com')
+      .replace('/blob/', '/');
+  }
+
+  // Convert Google Drive share URL to direct
+  // e.g. drive.google.com/file/d/ID/view → drive.google.com/uc?export=view&id=ID
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+  }
+
+  return url;
+}
+
+const placeholderHTML = (title) => `
+  <div class="project-thumb-placeholder">
+    <div class="placeholder-bg"></div>
+    <div class="placeholder-content">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="m21 15-5-5L5 21"/>
+      </svg>
+      <span>${title}</span>
+    </div>
+  </div>`;
+
 function buildProjectCard({ title, description, link, image, tags, index }) {
   const card = document.createElement('div');
   card.className = 'project-card';
   card.style.animationDelay = (index * 0.1) + 's';
 
   const tagsHTML = tags.map(t => `<span class="project-tag">${t}</span>`).join('');
+  const cleanImage = sanitiseImageUrl(image);
 
-  // styled placeholder when no image is provided
-  const thumbHTML = image
-    ? `<div class="project-thumb-wrapper">
-         <img class="project-thumb" src="${image}" alt="${title}" loading="lazy" />
-       </div>`
-    : `<div class="project-thumb-wrapper">
-         <div class="project-thumb-placeholder">
-           <div class="placeholder-bg"></div>
-           <div class="placeholder-content">
-             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-               <path d="m21 15-5-5L5 21"/>
-             </svg>
-             <span>${title}</span>
-           </div>
-         </div>
-       </div>`;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'project-thumb-wrapper';
 
-  card.innerHTML = `
-    ${thumbHTML}
-    <div class="project-body">
-      <div class="project-tags">${tagsHTML}</div>
-      <h3>${title}</h3>
-      <p>${description}</p>
-      <a href="${link}" target="_blank" class="project-link">
-        View project <span>→</span>
-      </a>
-    </div>
+  if (cleanImage) {
+    const img = document.createElement('img');
+    img.className = 'project-thumb';
+    img.alt = title;
+    img.loading = 'lazy';
+    img.src = cleanImage;
+    // If image fails to load for any reason, swap in the styled placeholder
+    img.onerror = () => {
+      wrapper.innerHTML = placeholderHTML(title);
+    };
+    wrapper.appendChild(img);
+  } else {
+    wrapper.innerHTML = placeholderHTML(title);
+  }
+
+  card.appendChild(wrapper);
+
+  const body = document.createElement('div');
+  body.className = 'project-body';
+  body.innerHTML = `
+    <div class="project-tags">${tagsHTML}</div>
+    <h3>${title}</h3>
+    <p>${description}</p>
+    <a href="${link}" target="_blank" class="project-link">
+      View project <span>→</span>
+    </a>
   `;
+  card.appendChild(body);
 
   return card;
 }
