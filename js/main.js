@@ -84,7 +84,7 @@ window.addEventListener('load', () => {
   It appears on the site within minutes. No code needed!
 */
 
-const SHEET_URL = 'PASTE_YOUR_CSV_URL_HERE';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9kzmYM1xrrZeyEbm_bZQBWOUqkZXobl1nexHtjHTXycBtzUiA3jBKic8YMhrtcoztIk0oEW5u3F-X/pub?output=csv';
 
 async function fetchProjects() {
   const loading = document.getElementById('projectsLoading');
@@ -92,7 +92,7 @@ async function fetchProjects() {
   const grid    = document.getElementById('projectsGrid');
 
   // Sheet not connected yet — show fallback projects
-  if (SHEET_URL === 'PASTE_YOUR_CSV_URL_HERE') {
+  if (SHEET_URL === 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9kzmYM1xrrZeyEbm_bZQBWOUqkZXobl1nexHtjHTXycBtzUiA3jBKic8YMhrtcoztIk0oEW5u3F-X/pub?output=csv') {
     loading.classList.add('hidden');
     renderFallbackProjects(grid);
     return;
