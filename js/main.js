@@ -269,3 +269,150 @@ function renderFallbackProjects(grid) {
 
 // Run on page load
 fetchProjects();
+
+/* ── TESTIMONIALS FETCH ─────────────────────────────────────── */
+
+/*
+  SETUP INSTRUCTIONS:
+  1. Open her Google Sheet, click the + at the bottom to add a new tab
+  2. Name the tab: Testimonials
+  3. Add these headers in row 1:
+       name | role | quote | stars | avatar | published
+  4. Fill in a test row, set published to TRUE
+  5. Click File → Share → Publish to web
+     → Select the "Testimonials" tab
+     → Select CSV format → Publish → Copy the URL
+  6. Paste the URL below replacing PASTE_YOUR_TESTIMONIALS_CSV_URL_HERE
+*/
+
+const TESTIMONIALS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXiVNz1VQNkGl_xTHGj9yeOLKjStrMjmrB84os5uLcw-FjvxXhvbzY7LVKY-xtqEbZGlcBAX5b093Q/pub?gid=1854328472&single=true&output=csv';
+
+const FALLBACK_TESTIMONIALS = [
+  {
+    name: 'Michael',
+    role: 'International Promotions Manager · International Recruitment Team',
+    quote: 'Fiyin was exceptionally intentional in her approach. She took the time to deeply understand our workflow before suggesting technical solutions — a rare and appreciated quality in a data partner. She translated our "layman\'s terms" into high-quality technical outputs and demonstrated impressive critical thinking. For instance, she steered us away from using confusing week numbers toward a month-based view. This simple recommendation significantly improved data accessibility for new team members and made aligning strategic changes with results much more intuitive. The dashboard has revolutionised how we align initiatives with recruitment peaks — revealing insights that were previously hidden in our historical data.',
+    stars: 5,
+    avatar: '',
+  },
+  {
+    name: 'Gill',
+    role: 'Analyst Developer · Data Architecture Team',
+    quote: 'Fiy was very approachable and listened carefully to what was required given the constraints we were working under. She dealt with the work promptly and efficiently. The target was to produce working reports which Fiy delivered on time — working with limited requirement information and access to source data. It seemed to work best when discussing changes and updating Qlik in person, and working this way helped to avoid any errors in understanding.',
+    stars: 5,
+    avatar: '',
+  },
+];
+
+async function fetchTestimonials() {
+  const loading = document.getElementById('testLoading');
+  const error   = document.getElementById('testError');
+  const grid    = document.getElementById('testGrid');
+
+  // if (!loading || !grid) return;
+
+  // // Sheet not connected yet — show hardcoded fallback testimonials
+  // if (TESTIMONIALS_SHEET_URL === 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXiVNz1VQNkGl_xTHGj9yeOLKjStrMjmrB84os5uLcw-FjvxXhvbzY7LVKY-xtqEbZGlcBAX5b093Q/pub?gid=1854328472&single=true&output=csv') {
+  //   loading.classList.add('hidden');
+  //   renderFallbackTestimonials(grid);
+  //   return;
+  // }
+
+  try {
+    const response = await fetch(TESTIMONIALS_SHEET_URL);
+    if (!response.ok) throw new Error('Testimonials fetch failed');
+
+    const csv = await response.text();
+    const rows = csv.trim().split('\n').slice(1);
+
+    const testimonials = rows.map(row => {
+      const cols = [];
+      let current = '';
+      let inQuotes = false;
+      for (let char of row) {
+        if (char === '"') { inQuotes = !inQuotes; }
+        else if (char === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
+        else { current += char; }
+      }
+      cols.push(current.trim());
+      const [name, role, quote, stars, avatar, published] = cols;
+      return { name, role, quote, stars, avatar, published };
+    });
+
+    const published = testimonials.filter(t =>
+      t.published?.trim().toUpperCase() === 'TRUE'
+    );
+
+    loading.classList.add('hidden');
+
+    if (published.length === 0) {
+      renderFallbackTestimonials(grid);
+      return;
+    }
+
+    published.forEach((t, i) => {
+      const card = buildTestimonialCard({
+        name:   t.name?.trim()   || 'Anonymous',
+        role:   t.role?.trim()   || '',
+        quote:  t.quote?.trim()  || '',
+        stars:  parseInt(t.stars?.trim()) || 5,
+        avatar: t.avatar?.trim() || '',
+        index:  i
+      });
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Testimonials error:', err);
+    loading.classList.add('hidden');
+    renderFallbackTestimonials(grid);
+  }
+}
+
+function renderFallbackTestimonials(grid) {
+  FALLBACK_TESTIMONIALS.forEach((t, i) => {
+    const card = buildTestimonialCard({ ...t, index: i });
+    grid.appendChild(card);
+  });
+}
+
+function buildTestimonialCard({ name, role, quote, stars, avatar, index }) {
+  const card = document.createElement('div');
+  card.className = 'test-card';
+  card.style.animationDelay = (index * 0.1) + 's';
+
+  // Build star rating (max 5)
+  const clampedStars = Math.min(Math.max(stars, 1), 5);
+  const starsHTML = Array.from({ length: 5 }, (_, i) =>
+    `<span class="test-star ${i < clampedStars ? '' : 'empty'}">★</span>`
+  ).join('');
+
+  // Avatar — image or initial placeholder
+  const cleanAvatar = sanitiseImageUrl(avatar);
+  const initial = name.charAt(0).toUpperCase();
+
+  let avatarHTML;
+  if (cleanAvatar) {
+    avatarHTML = `<img class="test-avatar" src="${cleanAvatar}" alt="${name}"
+      onerror="this.outerHTML='<div class=\\'test-avatar-placeholder\\'>${initial}</div>'" />`;
+  } else {
+    avatarHTML = `<div class="test-avatar-placeholder">${initial}</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="test-stars">${starsHTML}</div>
+    <p class="test-quote">${quote}</p>
+    <div class="test-author">
+      ${avatarHTML}
+      <div class="test-author-info">
+        <span class="test-name">${name}</span>
+        ${role ? `<span class="test-role">${role}</span>` : ''}
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+// Run on page load
+fetchTestimonials();
