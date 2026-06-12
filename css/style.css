@@ -866,6 +866,112 @@ ul { list-style: none; }
   font-size: 0.85rem;
 }
 
+/* ── TESTIMONIALS ───────────────────────────────────────────── */
+.testimonials { background: var(--bg-2); }
+
+.test-loading {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-muted);
+}
+
+.test-error {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.test-card {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.test-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(232,255,71,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.test-card::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  font-family: var(--font-head);
+  font-size: 8rem;
+  font-weight: 800;
+  color: rgba(232,255,71,0.06);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.test-stars { display: flex; gap: 3px; }
+.test-star { color: var(--accent); font-size: 0.9rem; }
+.test-star.empty { color: var(--border); }
+
+.test-quote {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.75;
+  font-style: italic;
+  flex: 1;
+}
+
+.test-author {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.test-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.test-avatar-placeholder {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.test-author-info { display: flex; flex-direction: column; gap: 2px; }
+.test-name { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.test-role { font-size: 0.78rem; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .test-grid { grid-template-columns: 1fr; }
+}
+
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .skills-grid { grid-template-columns: repeat(2, 1fr); }
